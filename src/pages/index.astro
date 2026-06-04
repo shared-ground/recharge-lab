@@ -4,8 +4,10 @@ import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import Science from '../components/Science.astro';
 import Formats from '../components/Formats.astro';
+import Testimonials from '../components/Testimonials.astro';
 import ClosingBand from '../components/ClosingBand.astro';
 import Footer from '../components/Footer.astro';
+import { testimonials } from '../data/testimonials';
 ---
 
 <Base>
@@ -14,6 +16,7 @@ import Footer from '../components/Footer.astro';
     <Hero />
     <Science />
     <Formats />
+    <Testimonials testimonials={testimonials} />
     <ClosingBand />
   </main>
   <Footer />

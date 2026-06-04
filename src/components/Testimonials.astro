@@ -1,0 +1,79 @@
+---
+import type { Testimonial } from '../data/testimonials';
+
+interface Props {
+  testimonials: Testimonial[];
+}
+
+const { testimonials } = Astro.props;
+
+// Maximum 5 - only display the first 5 if more are passed.
+const items = (testimonials ?? []).slice(0, 5);
+const count = items.length;
+---
+
+{count > 0 && (
+  <section class="wrap">
+    <div class="kicker reveal">Real Results</div>
+    <h2 class="reveal">What Clients Say</h2>
+    <div class={`tgrid reveal${count === 1 ? ' single' : ''}`}>
+      {items.map((t) => {
+        const stars = Math.max(1, Math.min(5, t.stars ?? 5));
+        return (
+          <figure class="tcard">
+            <div class="tstars" aria-label={`${stars} out of 5 stars`}>
+              {'★'.repeat(stars)}
+            </div>
+            <blockquote class="tquote">{`“${t.quote}”`}</blockquote>
+            {t.attribution && <figcaption class="tattr">{t.attribution}</figcaption>}
+          </figure>
+        );
+      })}
+    </div>
+  </section>
+)}
+
+<style>
+  .tgrid {
+    display: grid;
+    gap: 18px;
+    margin-top: 26px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .tgrid.single {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tcard {
+    background: linear-gradient(160deg, var(--panel), var(--bg-2));
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px 26px;
+    margin: 0;
+  }
+  .tstars {
+    color: var(--cyan);
+    font-size: 16px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .tquote {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    color: #d4e0ec;
+    font-style: italic;
+    margin: 0;
+  }
+  .tattr {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+</style>
