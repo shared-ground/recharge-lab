@@ -8,7 +8,7 @@ export interface Testimonial {
 export const pinnedTestimonials: Testimonial[] = [
   {
     quote: "Ever since my last treatment I've been able to get out of bed in the morning without any ankle/foot pain. Absolute life changer. Went for a 5k run at the weekend - first time since before Christmas - and no problem at all.",
-    attribution: "Client - Bath & South West",
+    attribution: "David - Former Rugby Player, Bath & South West",
     stars: 5
   },
   {
