@@ -2,61 +2,90 @@
 import type { Testimonial } from '../data/testimonials';
 
 interface Props {
-  testimonials: Testimonial[];
+  pinned: Testimonial[];
+  carousel?: Testimonial[];
 }
 
-const { testimonials } = Astro.props;
+const { pinned, carousel = [] } = Astro.props;
 
-// Maximum 5 - only display the first 5 if more are passed.
-const items = (testimonials ?? []).slice(0, 5);
-const count = items.length;
+const pinnedItems = (pinned ?? []).slice(0, 3);
+const carouselItems = (carousel ?? []);
+
+const stars = (t: Testimonial) => '★'.repeat(Math.max(1, Math.min(5, t.stars ?? 5)));
 ---
 
-{count > 0 && (
-  <section class="wrap">
+{pinnedItems.length > 0 && (
+  <section class="twrap">
     <div class="kicker reveal">Real Results</div>
     <h2 class="reveal">What Clients Say</h2>
-    <div class={`tgrid reveal${count === 1 ? ' single' : ''}`}>
-      {items.map((t) => {
-        const stars = Math.max(1, Math.min(5, t.stars ?? 5));
-        return (
-          <figure class="tcard">
-            <div class="tstars" aria-label={`${stars} out of 5 stars`}>
-              {'★'.repeat(stars)}
-            </div>
-            <blockquote class="tquote">{`“${t.quote}”`}</blockquote>
-            {t.attribution && <figcaption class="tattr">{t.attribution}</figcaption>}
-          </figure>
-        );
-      })}
+
+    <!-- Pinned grid: three strongest reviews, always visible -->
+    <div class="tgrid reveal">
+      {pinnedItems.map((t) => (
+        <figure class="tcard">
+          <div class="tstars" aria-label="5 out of 5 stars">{stars(t)}</div>
+          <blockquote class="tquote">{`“${t.quote}”`}</blockquote>
+          {t.attribution && <figcaption class="tattr">{t.attribution}</figcaption>}
+        </figure>
+      ))}
     </div>
+
+    {carouselItems.length > 0 && (
+      <div class="cwrap reveal">
+        <div class="cdivider"><span>More from our clients</span></div>
+
+        <div class="carousel" data-carousel>
+          <div class="carousel-viewport">
+            <div class="carousel-track">
+              {carouselItems.map((t) => (
+                <div class="cslide">
+                  <figure class="tcard">
+                    <div class="tstars" aria-label="5 out of 5 stars">{stars(t)}</div>
+                    <blockquote class="tquote">{`“${t.quote}”`}</blockquote>
+                    {t.attribution && <figcaption class="tattr">{t.attribution}</figcaption>}
+                  </figure>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {carouselItems.length > 1 && (
+            <div class="cnav">
+              <button class="carrow cprev" type="button" aria-label="Previous testimonial">‹</button>
+              <div class="cdots">
+                {carouselItems.map((_, k) => (
+                  <button class="cdot" type="button" aria-label={`Go to testimonial ${k + 1}`}></button>
+                ))}
+              </div>
+              <button class="carrow cnext" type="button" aria-label="Next testimonial">›</button>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
   </section>
 )}
 
 <style>
   /* Extra top padding so the heading clears the Formats cards above,
      keeping the visual gap consistent with the rest of the site. */
-  section {
-    padding-top: 72px;
+  .twrap {
+    padding: 72px 0 46px;
+    max-width: 980px;
+    margin: 0 auto;
+    /* keep the standard wrap gutter */
+    padding-left: 22px;
+    padding-right: 22px;
   }
-  .tgrid {
-    display: grid;
-    gap: 18px;
-    margin-top: 26px;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-  .tgrid.single {
-    grid-template-columns: 1fr;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+
+  /* ---- shared card ---- */
   .tcard {
     background: linear-gradient(160deg, var(--panel), var(--bg-2));
     border: 1px solid var(--line);
     border-radius: 20px;
     padding: 28px 26px;
     margin: 0;
+    height: 100%;
   }
   .tstars {
     color: var(--cyan);
@@ -64,6 +93,10 @@ const count = items.length;
     letter-spacing: 2px;
     line-height: 1;
     margin-bottom: 14px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .tquote {
     font-family: 'Hanken Grotesk', sans-serif;
@@ -81,4 +114,183 @@ const count = items.length;
     text-transform: uppercase;
     margin-top: 16px;
   }
+
+  /* ---- pinned grid ---- */
+  .tgrid {
+    display: grid;
+    gap: 18px;
+    margin-top: 26px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  @media (min-width: 900px) {
+    .tgrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ---- separator / label ---- */
+  .cwrap {
+    margin-top: 48px;
+  }
+  .cdivider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    color: var(--muted-2);
+  }
+  .cdivider::before,
+  .cdivider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .cdivider span {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    white-space: nowrap;
+  }
+
+  /* ---- carousel ---- */
+  .carousel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .carousel-viewport {
+    overflow: hidden;
+  }
+  .carousel-track {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+  }
+  .cslide {
+    flex: 0 0 100%;
+    min-width: 0;
+    padding: 2px; /* room for card border/shadow */
+  }
+
+  .cnav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .carrow {
+    appearance: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid rgba(47, 179, 230, 0.5);
+    background: transparent;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s;
+  }
+  .carrow:hover {
+    background: rgba(47, 179, 230, 0.14);
+    border-color: var(--cyan);
+  }
+  .carrow:active {
+    transform: translateY(1px);
+  }
+  .cdots {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+  }
+  .cdot {
+    appearance: none;
+    cursor: pointer;
+    width: 9px;
+    height: 9px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.22);
+    transition: 0.25s;
+  }
+  .cdot.active {
+    width: 24px;
+    border-radius: 999px;
+    background: var(--grad);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-track {
+      transition: none;
+    }
+  }
 </style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-carousel]');
+  if (root) {
+    const track = root.querySelector<HTMLElement>('.carousel-track')!;
+    const slides = Array.from(track.children) as HTMLElement[];
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.cdot'));
+    const prevBtn = root.querySelector<HTMLButtonElement>('.cprev');
+    const nextBtn = root.querySelector<HTMLButtonElement>('.cnext');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let i = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const render = () => {
+      track.style.transform = `translateX(${-i * 100}%)`;
+      dots.forEach((d, k) => {
+        d.classList.toggle('active', k === i);
+        d.setAttribute('aria-current', k === i ? 'true' : 'false');
+      });
+    };
+    const go = (n: number) => {
+      i = (n + slides.length) % slides.length;
+      render();
+    };
+    const next = () => go(i + 1);
+    const prev = () => go(i - 1);
+
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = null;
+    };
+    const start = () => {
+      if (reduced || slides.length < 2) return;
+      stop();
+      timer = setInterval(next, 5000);
+    };
+
+    nextBtn?.addEventListener('click', () => { next(); start(); });
+    prevBtn?.addEventListener('click', () => { prev(); start(); });
+    dots.forEach((d, k) => d.addEventListener('click', () => { go(k); start(); }));
+
+    // Pause on hover (desktop)
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+
+    // Touch / swipe (and pause while touching)
+    let x0: number | null = null;
+    track.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; stop(); }, { passive: true });
+    track.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+      x0 = null;
+      start();
+    }, { passive: true });
+
+    render();
+    start();
+  }
+</script>
