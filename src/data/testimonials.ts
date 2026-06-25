@@ -34,5 +34,10 @@ export const carouselTestimonials: Testimonial[] = [
     quote: "Immediately effective - two separate issues in my lower back and left arm eased significantly in the first session, with further improvements compounding from there. Next level treatment.",
     attribution: "Dom - Finance Director & BJJ Hobbyist, Bath & South West",
     stars: 5
+  },
+  {
+    quote: "Arrived with a bad back and a sore Achilles. By the time I left, both felt completely fine. One session - looser, more comfortable, able to move without the pain I came in with.",
+    attribution: "Steve - Bath & South West",
+    stars: 5
   }
 ];
