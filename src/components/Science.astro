@@ -14,22 +14,27 @@
       title="How PEMF works -- The Recharge Lab explainer"
     ></iframe>
 
-    <!-- Full screen toggle -- always available -->
+    <!-- Full screen toggle -- always available (CSS overlay, works on iOS too) -->
     <button
       type="button"
       class="explainer-fs"
       aria-label="Play explainer in full screen"
-      onclick="
-        var w=document.getElementById('explainer-wrap');
-        var fn=w.requestFullscreen||w.webkitRequestFullscreen||w.msRequestFullscreen;
-        if(fn){ fn.call(w); }
-        else { var f=document.getElementById('pemf-explainer'); var ff=f.requestFullscreen||f.webkitRequestFullscreen||f.webkitEnterFullscreen; if(ff){ ff.call(f); } }
-      "
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>
       </svg>
       <span>Full screen</span>
+    </button>
+
+    <!-- Close full screen (visible only while expanded) -->
+    <button
+      type="button"
+      class="explainer-close"
+      aria-label="Close full screen"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
     </button>
 
     <!-- Play overlay -- visible until first click. The click dispatches the
@@ -135,21 +140,80 @@
     border-color: var(--cyan);
   }
 
-  /* Centre the 16/9 iframe when the wrapper is taken full screen */
-  .explainer-wrap:fullscreen,
-  .explainer-wrap:-webkit-full-screen {
+  /* Close button -- only shown while expanded */
+  .explainer-close {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 3;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(47, 179, 230, .5);
+    background: rgba(7, 12, 22, .6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #F2F6FB;
+    cursor: pointer;
+    transition: .25s;
+  }
+  .explainer-close:hover {
+    background: rgba(47, 179, 230, .18);
+    border-color: var(--cyan);
+  }
+
+  /* CSS pseudo-fullscreen: fills the viewport on every device, including iOS
+     where the native Fullscreen API is unavailable for non-video elements. */
+  .explainer-wrap.fs-active {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     max-width: none;
-    left: auto;
+    left: 0;
     transform: none;
+    margin: 0;
     border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .explainer-wrap:fullscreen iframe,
-  .explainer-wrap:-webkit-full-screen iframe {
+  .explainer-wrap.fs-active iframe {
     max-height: 100vh;
+    max-height: 100dvh;
+  }
+  .explainer-wrap.fs-active .explainer-fs {
+    display: none;
+  }
+  .explainer-wrap.fs-active .explainer-close {
+    display: flex;
   }
 </style>
+
+<script>
+  const wrap = document.getElementById('explainer-wrap');
+  if (wrap) {
+    const fsBtn = wrap.querySelector<HTMLButtonElement>('.explainer-fs');
+    const closeBtn = wrap.querySelector<HTMLButtonElement>('.explainer-close');
+
+    const open = () => {
+      wrap.classList.add('fs-active');
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      wrap.classList.remove('fs-active');
+      document.body.style.overflow = '';
+    };
+
+    fsBtn?.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && wrap.classList.contains('fs-active')) close();
+    });
+  }
+</script>
